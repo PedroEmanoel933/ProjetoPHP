@@ -49,5 +49,19 @@ class User{
             return false;
         }
      }
+
+     public function login($email){
+        try{
+
+        } catch(PDOException $error) {
+     }
+    }
+
+     public function getUserInfo($user_fullname, $email){
+        try{
+
+        } catch (PDOException $error) {
+     }
+    }
 }
 ?>
