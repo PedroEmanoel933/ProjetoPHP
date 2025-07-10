@@ -1,4 +1,28 @@
+<?php
 
+// PERMITE QUE AS CLASSES DE OUTRO ARQUIVO SEJAM UTILIZADAS DENTRO DA PÁGINA
+require_once '../vendor/autoload.php';
+
+// IMPORTANDO A CLASSE IMC
+use Model\Imcs;
+
+// OBJETO QUE VAI REPRESENTAR CADA IMC CRIADO
+$imc = new Imcs();   
+
+if($_SERVER['REQUEST_METHOD'] === 'POST'){
+    if(isset($_POST['weight'], $_POST['height'])){
+        $weight = $_POST['weight'];
+        $height = $_POST['height'];
+
+        // ROUND é igual ao toFixed(), ou seja, defini a quantidade de caracteres depois da vírgula
+        // e arredonda.
+        $result = round($weight / ($height * $height), 2);
+
+        // O OBJETO imc VAI PEGAR A FUNÇÃO createIMC()
+        $imc -> createIMC($weight, $height, $result);
+    }
+}
+?>
 <!DOCTYPE html>
 <html lang="pt-br">
 
