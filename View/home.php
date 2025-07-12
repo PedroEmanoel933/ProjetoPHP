@@ -14,10 +14,6 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
         $weight = $_POST['weight'];
         $height = $_POST['height'];
 
-        // ROUND é igual ao toFixed(), ou seja, defini a quantidade de caracteres depois da vírgula
-        // e arredonda.
-        $result = round($weight / ($height * $height), 2);
-
         // O OBJETO imc VAI PEGAR A FUNÇÃO createIMC()
         $imc -> createIMC($weight, $height, $result);
     }
