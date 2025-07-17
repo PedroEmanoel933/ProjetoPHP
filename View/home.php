@@ -1,39 +1,50 @@
 <?php
-
-//PERMITE QUE AS CLASSES DE OUTRO ARQUIVO SEJAM UTILIZADAS DENTRO DA PÁGINA
+// VERIFICA SE AS INFORMAÇÕES DO USUÁRIO EXISTEM DENTRO DA SESSÃO DO MEU NAVEGADOR
+session_start();
 require_once '../vendor/autoload.php';
-
-//IMPORTANDO A CLASSE IMC'S
+// IMPORTANDO O CONTROLLER
 use Controller\ImcController;
+use Controller\UserController;
 
-//CRIANDO UM OBJETO PARA REPRESENTAR CADA IMC CRIADO                                                                                                                          
-$imcController =  new ImcController(); 
+// CRIANDO UM OBJETO PARA REPRESENTAR CADA IMC CRIADO
+$imcController = new ImcController();
+$userController = new UserController();
+
 $imcResult = null;
+$userInfo = null;
 
-       
-if($_SERVER['REQUEST_METHOD']==='POST'){
-    if(isset($_POST['weight'], $_POST['height'])){
+// VERIFICANDO SE HOUVE LOGIN
+if(!$userController->isLoggedIn()){
+    header('Location: ../index.php');
+    exit();
+}
+
+$user_id = $_SESSION['id'];
+$user_fullname = $_SESSION['user_fullname'];
+$email = $_SESSION['email'];
+// var_dump($_SESSION['id'], $_SESSION['user_fullname'],  $_SESSION['email']);
+
+$userInfo = $userController->getUserData($user_id, $user_fullname, $email);
+// var_dump($userInfo);
+//var_dump($imcController->calculateImc($weight, $height));
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (isset($_POST['weight'], $_POST['height'])) {
         $weight = $_POST['weight'];
         $height = $_POST['height'];
 
-        //ROUND é igual ao toFixed do JavaScript, ou seja, define a quantidade de caracteres depois da vírgula e arredonda 
-        // $result = round($weight / ($height * $height), 2);
+        // UTILIZANDO O CONTROLER COMO INTERMEDIÁRIO DA MANIPULAÇÃO E GERENCIAMENTO DE DADOS FRONT/BACK(BANCO DE DADOS)
+        $imcResult = $imcController->calculateImc($weight, $height);
 
-        //VAR_DUMP MOSTRA O QUE A IMCCONTROLLER POSSUI 
-        // var_dump(  $imcController->calculateImc($weight, $height));
-
-        //UTILIZANDO O CONTROLLER COMO INTERMEDIÁRIO DE MANIPULAÇÃO E GERENCIAMENTO DE DADOS FRONT/BACK
-       $imcResult = $imcController->calculateImc($weight, $height);
-
-       //VERIFICAR SE OS CAMPOS FORAM PREENCHIDOS
-       if($imcResult['BMIrange'] != "O peso e a altura devem conter valores positivos"){
-        $imcController->saveIMC($weight, $height, $imcResult['imc']);
-       }
+        // VERIFICAR SE OS CAMPOS FORAM PREENCHIDOS
+        if ($imcResult['BMIrange'] != "O peso e a altura devem conter valores positivos.") {
+            $imcController->saveIMC($weight, $height, $imcResult['imc']);
+        }
     }
 }
+
+
 ?>
-
-
 
 
 <!DOCTYPE html>
@@ -66,7 +77,8 @@ if($_SERVER['REQUEST_METHOD']==='POST'){
     <header class="bgLinearGradient">
         <nav class="d-flex justify-content-between flex-md-row flex-column-reverse gap-2">
             <div class="user_info d-flex justify-content-center align-items-center gap-3">
-                <figure class="rounded-circle d-flex justify-content-center align-items-center " style="background-color: #fff3; width: 40px; height: 40px; border-radius: 50%;">
+                <figure class="rounded-circle d-flex justify-content-center align-items-center "
+                    style="background-color: #fff3; width: 40px; height: 40px; border-radius: 50%;">
                     <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="white" class="bi bi-person"
                         viewBox="0 0 16 16">
                         <path
@@ -74,6 +86,12 @@ if($_SERVER['REQUEST_METHOD']==='POST'){
                     </svg>
                 </figure>
                 <!-- INFORMAÇÃO DO USUÁRIO -->
+                <?php if ($userInfo): ?>
+                    <div class="user_info_details d-flex flex-column">
+                        <p class="text-white m-0"><?php echo htmlspecialchars($userInfo['user_fullname']) ?></p>
+                        <p><?php echo htmlspecialchars($userInfo['email']) ?></p>
+                    </div>
+                <?php endif; ?>
             </div>
 
             <div class="d-flex gap-4">
@@ -147,12 +165,13 @@ if($_SERVER['REQUEST_METHOD']==='POST'){
                 <div class="result">
                     <div class="result__info">
                         <!-- RESULTADO DO IMC -->
-                         <?php if($imcResult): ?>
-                            <p>O seu IMC é: <?php echo $imcResult['imc'] ?? ''; ?> </p>
-                            <p>Categoria: <?php echo $imcResult['BMIrange']?> </p>
-                            <?php else: ?>
-                                <i  class="bi bi-calculator"></i> 
-                                <p>Preencha os dados ao lado para ver o resultado</p>
+                        <?php if ($imcResult): ?>
+                            <p>Seu IMC é: <?php echo $imcResult['imc'] ?? ''; ?> </p>
+                            <p>Categoria: <?php echo $imcResult['BMIrange']; ?> </p>
+
+                        <?php else: ?>
+                            <i class="bi bi-calculator"></i>
+                            <p>Preencha os dados ao lado para ver o resultado</p>
                         <?php endif; ?>
                     </div>
                 </div>

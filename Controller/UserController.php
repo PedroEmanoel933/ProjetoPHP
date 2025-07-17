@@ -1,69 +1,74 @@
 <?php
+
 namespace Controller;
 
 use Model\User;
 use Exception;
 
-class UserController{
+class UserController
+{
     private $userModel;
 
-    public function __construct(){
-        $this -> userModel = new user();
+    public function __construct()
+    {
+        $this->userModel = new User();
     }
 
     // REGISTRO DE USUÁRIO
-    public function registerUser($user_fullname, $email, $password){
-        try{
-            if(empty($user_fullname) or empty($email) or empty($password)){
-                return false;
-            }
-            // $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
-            return $this->userModel->registerUser($user_fullname, $email, $password);
+    public function createUser($user_fullname, $email, $password)
+    {
 
-        } catch (Exception $error){
-            echo "Erro ao cadastrar usuário: ". $error->getMessage();
+        if (empty($user_fullname) or empty($email) or empty($password)) {
             return false;
         }
+
+        // $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
+
+        return $this->userModel->registerUser($user_fullname, $email, $password);
+
     }
 
-    // EMAIL JÁ CADASTRADO?
-    public function checkUserByEmail($email){
-        return $this -> userModel ->getUserByEmail($email);
+    // E-MAIL JÁ CADASTRADO?
+    public function checkUserByEmail($email)
+    {
+        return $this->userModel->getUserByEmail($email);
     }
 
     // LOGIN DE USUÁRIO
-    public function login ($email, $password){
-        $user = $this -> userModel ->getUserByEmail($email);
+    public function login($email, $password)
+    {
+        $user = $this->userModel->getUserByEmail($email);
 
-        if($user && password_verify($password, $user['password'])){
-            /**
-             *  $user = [
-             * "id" => 1,
-             * "user_fullname" => teste,
-             * "email" => teste@example.com,
-             * "password" => lkadgieg132i50328sdçkgng
-             * ]
-             */
-
-                $_SESSION['id'] = $user['id'];
-                $_SESSION['user_fullname'] = $user['user_fullname'];
-                $_SESSION['email'] = $user['email'];
-                
-                return true;
-            
+        /**
+         * $user = [
+         *    "id" => 1,
+         *    "user_fullname" => "Teste",
+         *    "email" => "teste@example.com",
+         *    "password" => "$2y$10$19ujCfISbUFtFqPRJx9PN.G8fGcqNCkWTnitJpMOdJZ0x6TYL6EzC",
+         *    ...
+         * ]
+         */
+        if ($user && password_verify($password, $user['password'])) {
+            $_SESSION['id'] = $user['id'];
+            $_SESSION['user_fullname'] = $user['user_fullname'];
+            $_SESSION['email'] = $user['email'];
+            var_dump($_SESSION);
+            return true;
         }
         return false;
     }
+
     // USUÁRIO LOGADO?
-    public function isloggedIn(){
+    public function isLoggedIn()
+    {
         return isset($_SESSION['id']);
     }
 
-    // RESGATAR INFORMAÇÕES
-    public function getUserData($id, $user_fullname, $email){
-        $id = $_SESSION['id'];
-
-        return $this -> userModel -> getUserInfo($id, $user_fullname, $email);  
+    // RESGATAR DADOS DO USUÁRIO
+    public function getUserData($id, $user_fullname, $email)
+    {
+        return $this->userModel->getUserInfo($id, $user_fullname, $email);
     }
 }
+
 ?>
